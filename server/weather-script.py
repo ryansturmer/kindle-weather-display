@@ -8,12 +8,35 @@ import urllib2
 from xml.dom import minidom
 import datetime
 import codecs
+import time
 
-
-
-#
-# Download and parse weather data
-#
+ICONS = {
+	'bkn'      : '_partly_sunny',
+	'dust'     : '_fog',
+	'few'      : '_partly_sunny',
+	'fg'       : '_fog',
+	'fzra'     : '_hail',
+	'fzrara'   : '_wintry_mix',
+	'hi_shwrs' : '_light_rain',
+	'hi_tsra'  : '_light_tstorm',
+	'ip'       : '_hail',
+	'mist'     : '_fog',
+	'mix'      : '_wintry_mix',
+	'nsurtsra' : '_doge',
+	'ovc'      : '_cloudy',
+	'ra'       : '_heavy_rain',
+	'ra1'      : '_light_rain',
+	'raip'     : '_hail',
+	'rasn'     : '_wintry_mix',
+	'sct'      : '_partly_sunny',
+	'shra'     : '_light_rain',
+	'skc'      : '_sunny',
+	'smoke'    : '_fog',
+	'sn'       : '_heavy_snow',
+	'tsra'     : '_heavy_tstorm',
+	'wind'     : '_wind',
+	'scttsra'  : '_light_tstorm'
+}
 
 # Fetch data (change lat and lon to desired location)
 weather_xml = urllib2.urlopen('http://graphical.weather.gov/xml/SOAP_server/ndfdSOAPclientByDay.php?whichClient=NDFDgenByDay&lat=39.3286&lon=-76.6169&format=24+hourly&numDays=4&Unit=e').read()
@@ -37,14 +60,35 @@ for item in xml_temperatures:
 xml_icons = dom.getElementsByTagName('icon-link')
 icons = [None]*4
 for i in range(len(xml_icons)):
-    icons[i] = xml_icons[i].firstChild.nodeValue.split('/')[-1].split('.')[0].rstrip('0123456789')
-
+    icon = xml_icons[i].firstChild.nodeValue.split('/')[-1].split('.')[0].rstrip('0123456789')
+    if icon not in ICONS:
+    	print icon
+    icons[i] = ICONS.get(icon, '_doge')
 # Parse dates
 xml_day_one = dom.getElementsByTagName('start-valid-time')[0].firstChild.nodeValue[0:10]
 day_one = datetime.datetime.strptime(xml_day_one, '%Y-%m-%d')
 
+time_string = time.strftime('%I:%M')
 
+print "Summary"
+print "-------"
+print "Highs: %s" % highs
+print " Lows: %s" % lows
+print "Icons: %s" % icons
+print " Time: %s" % time_string
 
+output = codecs.open('clock_inkscape.svg', 'r', encoding='utf-8').read()
+
+output = output.replace('88:88', time_string)
+
+for i in range(3):
+	output = output.replace('D%dH' % i, str(highs[i]))
+	output = output.replace('D%dL' % i, str(lows[i]))
+	output = output.replace('#_use_d%d' % i, ('#' + icons[i]))
+
+codecs.open('clock-output.svg', 'w', encoding='utf-8').write(output)
+
+'''
 #
 # Preprocess SVG
 #
@@ -64,3 +108,4 @@ output = output.replace('DAY_THREE',days_of_week[(day_one + 2*one_day).weekday()
 
 # Write output
 codecs.open('weather-script-output.svg', 'w', encoding='utf-8').write(output)
+'''
