@@ -10,6 +10,9 @@ import datetime
 import codecs
 import time
 
+LATITUDE  =  36.012731
+LONGITUDE = -78.9066788
+
 ICONS = {
 	'bkn'      : '_partly_sunny',
 	'dust'     : '_fog',
@@ -39,7 +42,7 @@ ICONS = {
 }
 
 # Fetch data (change lat and lon to desired location)
-weather_xml = urllib2.urlopen('http://graphical.weather.gov/xml/SOAP_server/ndfdSOAPclientByDay.php?whichClient=NDFDgenByDay&lat=39.3286&lon=-76.6169&format=24+hourly&numDays=4&Unit=e').read()
+weather_xml = urllib2.urlopen('http://graphical.weather.gov/xml/SOAP_server/ndfdSOAPclientByDay.php?whichClient=NDFDgenByDay&lat=%s&lon=%s&format=24+hourly&numDays=4&Unit=e' % (LATITUDE, LONGITUDE)).read()
 dom = minidom.parseString(weather_xml)
 
 # Parse temperatures
@@ -64,6 +67,7 @@ for i in range(len(xml_icons)):
     if icon not in ICONS:
     	print icon
     icons[i] = ICONS.get(icon, '_doge')
+    
 # Parse dates
 xml_day_one = dom.getElementsByTagName('start-valid-time')[0].firstChild.nodeValue[0:10]
 day_one = datetime.datetime.strptime(xml_day_one, '%Y-%m-%d')
@@ -87,7 +91,7 @@ for i in range(3):
 	output = output.replace('#_use_d%d' % i, ('#' + icons[i]))
 
 codecs.open('clock-output.svg', 'w', encoding='utf-8').write(output)
-
+c
 '''
 #
 # Preprocess SVG
