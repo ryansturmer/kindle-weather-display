@@ -6,12 +6,16 @@
 
 import urllib2
 from xml.dom import minidom
-import datetime
 import codecs
 import time
+import pytz
+import datetime
+
+utc = pytz.utc
 
 LATITUDE  =  36.012731
 LONGITUDE = -78.9066788
+TIMEZONE = 'US/Eastern'
 
 ICONS = {
 	'bkn'      : '_partly_sunny',
@@ -72,13 +76,16 @@ for i in range(len(xml_icons)):
 xml_day_one = dom.getElementsByTagName('start-valid-time')[0].firstChild.nodeValue[0:10]
 day_one = datetime.datetime.strptime(xml_day_one, '%Y-%m-%d')
 
-time_string = time.strftime('%I:%M')
+now = utc.localize(datetime.datetime.utcnow())
+local = pytz.timezone(TIMEZONE)
+time_string = now.astimezone(local).strftime('%I:%M')
 
 print "Summary"
 print "-------"
 print "Highs: %s" % highs
 print " Lows: %s" % lows
 print "Icons: %s" % icons
+print "   TZ: %s" % local
 print " Time: %s" % time_string
 
 output = codecs.open('clock_inkscape.svg', 'r', encoding='utf-8').read()
@@ -93,7 +100,7 @@ for i in range(3):
 output = output.replace('#_use_g0', '#_doge')
 
 codecs.open('clock-output.svg', 'w', encoding='utf-8').write(output)
-c
+
 '''
 #
 # Preprocess SVG
