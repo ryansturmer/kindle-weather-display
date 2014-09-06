@@ -90,6 +90,8 @@ for i in range(3):
 	output = output.replace('D%dL' % i, str(lows[i]))
 	output = output.replace('#_use_d%d' % i, ('#' + icons[i]))
 
+output = output.replace('#_use_g0', '#_doge')
+
 codecs.open('clock-output.svg', 'w', encoding='utf-8').write(output)
 c
 '''
