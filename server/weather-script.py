@@ -1,15 +1,12 @@
 #!/usr/bin/python2
 
-# Kindle Weather Display
-# Matthew Petroff (http://www.mpetroff.net/)
-# September 2012
-
 import urllib2
 from xml.dom import minidom
 import codecs
 import time
 import pytz
 import datetime
+import tableview
 
 utc = pytz.utc
 
@@ -76,18 +73,38 @@ for i in range(len(xml_icons)):
 xml_day_one = dom.getElementsByTagName('start-valid-time')[0].firstChild.nodeValue[0:10]
 day_one = datetime.datetime.strptime(xml_day_one, '%Y-%m-%d')
 
+# Parse time
 now = utc.localize(datetime.datetime.utcnow())
 local = pytz.timezone(TIMEZONE)
-time_string = now.astimezone(local).strftime('%I:%M')
+now = now.astimezone(local)
+time_string = now.strftime('%I:%M')
+
+# Parse recycling schedule
+schedule = tableview.load('recycling_schedule.csv')
+pickup_days = set()
+for row in schedule[1:]:
+    year = int(row[0])
+    month = int(row[1])
+    days = [int(cell) for cell in row[2:] if cell]
+    for day in days:
+        pickup_days.add((year,month,day))
+warning_days = [now + datetime.timedelta(days=n) for n in range(3)]
+warning_days = [(day.year, day.month, day.day) for day in warning_days]
+
+recycling = False
+for day in warning_days:
+    if day in pickup_days:
+        recycling = True
+
 
 print "Summary"
 print "-------"
-print "Highs: %s" % highs
-print " Lows: %s" % lows
-print "Icons: %s" % icons
-print "   TZ: %s" % local
-print " Time: %s" % time_string
-
+print      "Highs: %s" % highs
+print "      Lows: %s" % lows
+print "     Icons: %s" % icons
+print "        TZ: %s" % local
+print "      Time: %s" % time_string
+print " Recycling: %s" % recycling
 output = codecs.open('clock_inkscape.svg', 'r', encoding='utf-8').read()
 
 output = output.replace('88:88', time_string)
@@ -97,7 +114,8 @@ for i in range(3):
 	output = output.replace('D%dL' % i, str(lows[i]))
 	output = output.replace('#_use_d%d' % i, ('#' + icons[i]))
 
-output = output.replace('#_use_g0', '#_doge')
+if recycling:
+    output = output.replace('#_use_g0', '#_recycle')
 
 codecs.open('clock-output.svg', 'w', encoding='utf-8').write(output)
 
