@@ -77,7 +77,7 @@ day_one = datetime.datetime.strptime(xml_day_one, '%Y-%m-%d')
 now = utc.localize(datetime.datetime.utcnow())
 local = pytz.timezone(TIMEZONE)
 now = now.astimezone(local)
-time_string = now.strftime('%I:%M')
+time_string = now.strftime('%I:%M').lstrip('0')
 
 # Parse recycling schedule
 schedule = tableview.load('recycling_schedule.csv')
